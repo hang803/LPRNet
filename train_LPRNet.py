@@ -66,7 +66,7 @@ def get_parser():
     parser.add_argument('--momentum', default=0.9, type=float, help='momentum')
     parser.add_argument('--weight_decay', default=2e-5, type=float, help='Weight decay for SGD')
     parser.add_argument('--lr_schedule', default=[4, 8, 12, 14, 16], help='schedule for learning rate.')
-    parser.add_argument('--save_folder', default='./weights/', help='Location to save checkpoint models')
+    parser.add_argument('--save_folder', default='./logs/', help='Location to save checkpoint models')
     parser.add_argument('--pretrained_model', default='./weights/Final_LPRNet_model.pth', help='pretrained base model')
 
 
@@ -200,7 +200,7 @@ def train():
     Greedy_Decode_Eval(lprnet, test_dataset, args)
 
     # save final parameters
-    torch.save(lprnet.state_dict(), args.save_folder + 'New_Final_LPRNet_model.pth')
+    torch.save(lprnet.state_dict(), args.save_folder + 'New_Final_LPRNet_model.pth',_use_new_zipfile_serialization=False)
 
 def Greedy_Decode_Eval(Net, datasets, args):
     # TestNet = Net.eval()
