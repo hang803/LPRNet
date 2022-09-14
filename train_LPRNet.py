@@ -48,15 +48,15 @@ def adjust_learning_rate(optimizer, cur_epoch, base_lr, lr_schedule):
 
 def get_parser():
     parser = argparse.ArgumentParser(description='parameters to train net')
-    parser.add_argument('--max_epoch', default=15, help='epoch to train the network')
+    parser.add_argument('--max_epoch', default=300, help='epoch to train the network')
     parser.add_argument('--img_size', default=[94, 24], help='the image size')
     parser.add_argument('--train_img_dirs', default="./data/train", help='the train images path')
     parser.add_argument('--test_img_dirs', default="./data/test", help='the test images path')
-    parser.add_argument('--dropout_rate', default=0.5, help='dropout rate.')
-    parser.add_argument('--learning_rate', default=0.1, help='base value of learning rate.')
+    parser.add_argument('--dropout_rate', default=0.4, help='dropout rate.')
+    parser.add_argument('--learning_rate', default=0.001, help='base value of learning rate.')
     parser.add_argument('--lpr_max_len', default=8, help='license plate number max length.')
-    parser.add_argument('--train_batch_size', default=64, help='training batch size.')
-    parser.add_argument('--test_batch_size', default=32, help='testing batch size.')
+    parser.add_argument('--train_batch_size', default=128, help='training batch size.')
+    parser.add_argument('--test_batch_size', default=64, help='testing batch size.')
     parser.add_argument('--phase_train', default=True, type=bool, help='train or test phase flag.')
     parser.add_argument('--num_workers', default=2, type=int, help='Number of workers used in dataloading')
     parser.add_argument('--cuda', default=True, type=bool, help='Use cuda to train model')
@@ -151,13 +151,12 @@ def train():
             loss_val = 0
             epoch += 1
 
-        if iteration !=0 and iteration % args.save_interval == 0:
-            torch.save(lprnet.state_dict(), args.save_folder + 'LPRNet_' + '_iteration_' + repr(iteration) + '.pth')
-
         if (iteration + 1) % args.test_interval == 0:
-            Greedy_Decode_Eval(lprnet, test_dataset, args)
+            Acc=Greedy_Decode_Eval(lprnet, test_dataset, args)
             # lprnet.train() # should be switch to train mode
-
+        if iteration !=0 and iteration % args.save_interval == 0:
+            torch.save(lprnet.state_dict(), args.save_folder + 'LPRNet_' + '_iteration_'
+                       + repr(iteration)+'Acc_{}'.format(Acc) + '.pth')
         start_time = time.time()
         # load train data
         images, labels, lengths = next(batch_iterator)
@@ -197,10 +196,11 @@ def train():
                   'Batch time: %.4f sec. ||' % (end_time - start_time) + 'LR: %.8f' % (lr))
     # final test
     print("Final test Accuracy:")
-    Greedy_Decode_Eval(lprnet, test_dataset, args)
+    Acc=Greedy_Decode_Eval(lprnet, test_dataset, args)
 
     # save final parameters
-    torch.save(lprnet.state_dict(), args.save_folder + 'New_Final_LPRNet_model.pth',_use_new_zipfile_serialization=False)
+    torch.save(lprnet.state_dict(), args.save_folder + 'New_Final_LPRNet_model_Acc{}.pth'.format(Acc)
+               ,_use_new_zipfile_serialization=False)
 
 def Greedy_Decode_Eval(Net, datasets, args):
     # TestNet = Net.eval()
@@ -262,7 +262,7 @@ def Greedy_Decode_Eval(Net, datasets, args):
     print("[Info] Test Accuracy: {} [{}:{}:{}:{}]".format(Acc, Tp, Tn_1, Tn_2, (Tp+Tn_1+Tn_2)))
     t2 = time.time()
     print("[Info] Test Speed: {}s 1/{}]".format((t2 - t1) / len(datasets), len(datasets)))
-
+    return Acc
 
 if __name__ == "__main__":
     train()
