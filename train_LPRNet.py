@@ -48,7 +48,7 @@ def adjust_learning_rate(optimizer, cur_epoch, base_lr, lr_schedule):
 
 def get_parser():
     parser = argparse.ArgumentParser(description='parameters to train net')
-    parser.add_argument('--max_epoch', default=300, help='epoch to train the network')
+    parser.add_argument('--max_epoch', default=500, help='epoch to train the network')
     parser.add_argument('--img_size', default=[94, 24], help='the image size')
     parser.add_argument('--train_img_dirs', default="./data/train", help='the train images path')
     parser.add_argument('--test_img_dirs', default="./data/test", help='the test images path')
@@ -64,7 +64,7 @@ def get_parser():
     parser.add_argument('--save_interval', default=2000, type=int, help='interval for save model state dict')
     parser.add_argument('--test_interval', default=2000, type=int, help='interval for evaluate')
     parser.add_argument('--momentum', default=0.9, type=float, help='momentum')
-    parser.add_argument('--weight_decay', default=2e-5, type=float, help='Weight decay for SGD')
+    parser.add_argument('--weight_decay', default=1e-4, type=float, help='Weight decay for SGD')
     parser.add_argument('--lr_schedule', default=[4, 8, 12, 14, 16], help='schedule for learning rate.')
     parser.add_argument('--save_folder', default='./logs/', help='Location to save checkpoint models')
     parser.add_argument('--pretrained_model', default='./weights/Final_LPRNet_model.pth', help='pretrained base model')
@@ -127,8 +127,7 @@ def train():
     # define optimizer
     # optimizer = optim.SGD(lprnet.parameters(), lr=args.learning_rate,
     #                       momentum=args.momentum, weight_decay=args.weight_decay)
-    optimizer = optim.RMSprop(lprnet.parameters(), lr=args.learning_rate, alpha = 0.9, eps=1e-08,
-                         momentum=args.momentum, weight_decay=args.weight_decay)
+    optimizer = optim.Adam(lprnet.parameters(), lr=args.learning_rate, weight_decay=args.weight_decay)
     train_img_dirs = os.path.expanduser(args.train_img_dirs)
     test_img_dirs = os.path.expanduser(args.test_img_dirs)
     train_dataset = LPRDataLoader(train_img_dirs.split(','), args.img_size, args.lpr_max_len)
@@ -156,7 +155,7 @@ def train():
             # lprnet.train() # should be switch to train mode
         if iteration !=0 and iteration % args.save_interval == 0:
             torch.save(lprnet.state_dict(), args.save_folder + 'LPRNet_' + '_iteration_'
-                       + repr(iteration)+'Acc_{}'.format(Acc) + '.pth')
+                       + repr(iteration)+'Acc_{}'.format(Acc) + '.pth',_use_new_zipfile_serialization=False)
         start_time = time.time()
         # load train data
         images, labels, lengths = next(batch_iterator)
