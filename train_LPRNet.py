@@ -48,24 +48,24 @@ def adjust_learning_rate(optimizer, cur_epoch, base_lr, lr_schedule):
 
 def get_parser():
     parser = argparse.ArgumentParser(description='parameters to train net')
-    parser.add_argument('--max_epoch', default=500, help='epoch to train the network')
+    parser.add_argument('--max_epoch', default=200, help='epoch to train the network')
     parser.add_argument('--img_size', default=[94, 24], help='the image size')
     parser.add_argument('--train_img_dirs', default="./data/train", help='the train images path')
     parser.add_argument('--test_img_dirs', default="./data/test", help='the test images path')
     parser.add_argument('--dropout_rate', default=0.4, help='dropout rate.')
     parser.add_argument('--learning_rate', default=0.001, help='base value of learning rate.')
     parser.add_argument('--lpr_max_len', default=8, help='license plate number max length.')
-    parser.add_argument('--train_batch_size', default=128, help='training batch size.')
-    parser.add_argument('--test_batch_size', default=64, help='testing batch size.')
+    parser.add_argument('--train_batch_size', default=28, help='training batch size.')
+    parser.add_argument('--test_batch_size', default=4, help='testing batch size.')
     parser.add_argument('--phase_train', default=True, type=bool, help='train or test phase flag.')
     parser.add_argument('--num_workers', default=2, type=int, help='Number of workers used in dataloading')
     parser.add_argument('--cuda', default=True, type=bool, help='Use cuda to train model')
     parser.add_argument('--resume_epoch', default=0, type=int, help='resume iter for retraining')
-    parser.add_argument('--save_interval', default=2000, type=int, help='interval for save model state dict')
-    parser.add_argument('--test_interval', default=2000, type=int, help='interval for evaluate')
+    parser.add_argument('--save_interval', default=200, type=int, help='interval for save model state dict')
+    parser.add_argument('--test_interval', default=200, type=int, help='interval for evaluate')
     parser.add_argument('--momentum', default=0.9, type=float, help='momentum')
     parser.add_argument('--weight_decay', default=1e-4, type=float, help='Weight decay for SGD')
-    parser.add_argument('--lr_schedule', default=[4, 8, 12, 14, 16], help='schedule for learning rate.')
+    parser.add_argument('--lr_schedule', default=[40, 80, 120, 140, 160], help='schedule for learning rate.')
     parser.add_argument('--save_folder', default='./logs/', help='Location to save checkpoint models')
     parser.add_argument('--pretrained_model', default='./weights/Final_LPRNet_model.pth', help='pretrained base model')
 
@@ -125,9 +125,9 @@ def train():
         print("initial net weights successful!")
 
     # define optimizer
-    # optimizer = optim.SGD(lprnet.parameters(), lr=args.learning_rate,
-    #                       momentum=args.momentum, weight_decay=args.weight_decay)
-    optimizer = optim.Adam(lprnet.parameters(), lr=args.learning_rate, weight_decay=args.weight_decay)
+    optimizer = optim.SGD(lprnet.parameters(), lr=args.learning_rate,
+                          momentum=args.momentum, weight_decay=args.weight_decay)
+    optimizer = optim.Adam(lprnet.parameters(),betas=0.999,eps=1e-8,lr=args.learning_rate, weight_decay=args.weight_decay)
     train_img_dirs = os.path.expanduser(args.train_img_dirs)
     test_img_dirs = os.path.expanduser(args.test_img_dirs)
     train_dataset = LPRDataLoader(train_img_dirs.split(','), args.img_size, args.lpr_max_len)
